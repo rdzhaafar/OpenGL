@@ -1,6 +1,7 @@
 #!/bin/sh
 
 build_directory=build
+executable_name=OpenGL
 
 ##===---------------------------------------------------------------------===##
 # Compiler flags
@@ -54,4 +55,4 @@ done
 $compiler $compiler_flags vendor/glad/src/glad.c -o $build_directory/glad.o
 
 # Link
-$linker $linker_flags -o $build_directory/graphics $build_directory/*.o
+$linker $linker_flags -o $build_directory/$executable_name $build_directory/*.o

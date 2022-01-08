@@ -8,7 +8,7 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/graphics",
+            "program": "${workspaceFolder}/build/OpenGL",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
