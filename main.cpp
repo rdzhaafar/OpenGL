@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <graphics.h>
 
 void message(char *messageFormat, ...)
 {
@@ -62,17 +62,56 @@ int main(void)
     const GLubyte *glVersion = glGetString(GL_VERSION);
     message("OpenGL version %s by %s\n", glVersion, glVendor);
 
-    // Set clear color to annoying bright pink
+    // Set clear color
     GLfloat r, g, b, a;
-    r = 1.0;
-    g = 0.0;
-    b = 0.5;
-    a = 1.0;
+    r = 0.0f;
+    g = 0.0f;
+    b = 1.0f;
+    a = 1.0f;
     glClearColor(r, g, b, a);
 
-    while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
+    // Set up the VAO.
+    GLuint vertexArrayHandle;
+    glGenVertexArrays(1, &vertexArrayHandle);
+    glBindVertexArray(vertexArrayHandle);
 
+    // Triangle
+    const GLfloat triangleVertices[] = {
+        -0.5f, -0.5f,  0.0f,
+         0.5f, -0.5f,  0.0f,
+         0.0f,  0.5f,  0.0f,
+    };
+    GLuint vertexBufferHandle;
+    glGenBuffers(1, &vertexBufferHandle);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
+
+    GLuint shaderProgramHandle = glCreateProgram();
+    glAttachShader(shaderProgramHandle, loadShader("assets/fragment.glsl", GL_FRAGMENT_SHADER));
+    glAttachShader(shaderProgramHandle, loadShader("assets/vertex.glsl", GL_VERTEX_SHADER));
+    glLinkProgram(shaderProgramHandle);
+
+    while (!glfwWindowShouldClose(window)) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Use the loaded shader
+        glUseProgram(shaderProgramHandle);
+
+        // Draw the vertex array contents as triangles
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
+        glVertexAttribPointer(
+            0,         // attribute 0
+            3,         // size
+            GL_FLOAT,  // type
+            GL_FALSE,  // normalized?
+            0,         // stride
+            NULL       // array buffer offset
+        );
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDisableVertexAttribArray(0);
+
+        // Swap the front and back buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
 
