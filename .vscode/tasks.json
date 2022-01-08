@@ -11,8 +11,7 @@
         {
             "label": "run",
             "type": "shell",
-            "command": "./build/OpenGL",
-            "dependsOn": "compile"
+            "command": "./build/OpenGL"
         }
     ]
 }
