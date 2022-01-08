@@ -17,9 +17,6 @@ compiler_flags+="-Wall -Wextra "
 # Disable deprecation warnings
 compiler_flags+="-Wno-deprecated "
 
-# Disable "unused parameter" warnings
-compiler_flags+="-Wno-unused-parameter "
-
 # GLFW
 compiler_flags+="-Ivendor/glfw-3.3.6.bin.MACOS/include/ "
 compiler_flags+="-Ivendor/glad/include "
