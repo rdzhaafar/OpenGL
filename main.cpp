@@ -91,11 +91,16 @@ int main(void)
     glAttachShader(shaderProgramHandle, loadShader("assets/vertex.glsl", GL_VERTEX_SHADER));
     glLinkProgram(shaderProgramHandle);
 
+    GLint timeUniform = glGetUniformLocation(shaderProgramHandle, "timeUniform");
+
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Use the loaded shader
         glUseProgram(shaderProgramHandle);
+
+        // Pass the current time to the shader
+        glUniform1f(timeUniform, (float)glfwGetTime());
 
         // Draw the vertex array contents as triangles
         glEnableVertexAttribArray(0);

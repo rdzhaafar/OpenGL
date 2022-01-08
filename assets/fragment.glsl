@@ -1,8 +1,17 @@
 #version 330 core
 
-out vec3 color;
+precision mediump float;
+
+out vec4 color;
+
+uniform float timeUniform;
 
 void main()
 {
-    color = vec3(0.0, 1.0, 0.0);
+    color = vec4(
+        abs(sin(timeUniform)),
+        abs(cos(timeUniform)),
+        abs(tan(timeUniform)),
+        1.0
+    );
 }
