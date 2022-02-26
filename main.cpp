@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <graphics.h>
 #include <locale.h>
+#include <math.h>
 
 static int framebufferWidth;
 static int framebufferHeight;
@@ -13,9 +14,6 @@ static float triangleVertices[] = {
     -0.5f, -0.5f,  0.0f,
      0.5f, -0.5f,  0.0f,
      0.0f,  0.5f,  0.0f,
-    // -1.0f,  0.5f,  0.0f,
-    // -0.5f, -0.5f,  0.0f,
-    //  0.0f,  0.5f,  0.0f,
 };
 
 void message(char *messageFormat, ...)
@@ -57,7 +55,7 @@ void glfwFramebufferSizeCallback(GLFWwindow *window, int width, int height)
 
 void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    message("key: %d, scancode: %d, action: %d, mods: %d", key, scancode, action, mods);
+    // message("key: %d, scancode: %d, action: %d, mods: %d", key, scancode, action, mods);
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         exit(EXIT_SUCCESS);
@@ -66,7 +64,28 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods
 
 void charCallback(GLFWwindow *window, unsigned int codepoint)
 {
-    message("%C", (wchar_t)codepoint);
+    // message("%C", (wchar_t)codepoint);
+}
+
+void rotateTriangle()
+{
+    for (unsigned long i = 0; i < 9; i += 3)
+    {
+        double x = (double)triangleVertices[i];
+        double y = (double)triangleVertices[i + 1];
+
+        double theta = 0.0174533;
+
+        float newX = (float)(x * cos(theta) - y * sin(theta));
+        float newY = (float)(y * cos(theta) + x * sin(theta));
+
+        triangleVertices[i] = newX;
+        triangleVertices[i + 1] = newY;
+
+        // for (unsigned long j = 0; j < 9; j++) {
+            // message("triangleVertices[%d] = %f", j, triangleVertices[j]);
+        // }
+    }
 }
 
 int main(void)
@@ -86,7 +105,7 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow *window = glfwCreateWindow(800, 600, "OpenGL Window", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(800, 600, "OpenGL", NULL, NULL);
     if (!window)
         fatalError("Couldn't create a window");
 
@@ -112,17 +131,18 @@ int main(void)
     glGenVertexArrays(1, &vertexArrayHandle);
     glBindVertexArray(vertexArrayHandle);
 
-    // Triangle
+    // Generate vertex buffer
     GLuint vertexBufferHandle;
     glGenBuffers(1, &vertexBufferHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW);
 
+
+    // Load shader
     GLuint shaderProgramHandle = glCreateProgram();
     glAttachShader(shaderProgramHandle, loadShader("assets/fragment.glsl", GL_FRAGMENT_SHADER));
     glAttachShader(shaderProgramHandle, loadShader("assets/vertex.glsl", GL_VERTEX_SHADER));
     glLinkProgram(shaderProgramHandle);
 
+    // Create time uniform
     GLint timeUniform = glGetUniformLocation(shaderProgramHandle, "timeUniform");
 
     glfwSetFramebufferSizeCallback(window, glfwFramebufferSizeCallback);
@@ -140,6 +160,12 @@ int main(void)
         // Pass the current time to the shader
         glUniform1f(timeUniform, (float)glfwGetTime());
 
+
+        // Buffer vertices
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
+        glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), triangleVertices, GL_DYNAMIC_DRAW);
+
+
         // Draw the vertex array contents as triangles
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
@@ -154,9 +180,14 @@ int main(void)
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glDisableVertexAttribArray(0);
 
+
         // Swap the front and back buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+
+        // Rotate the triangle vertices around the origin
+        rotateTriangle();
     }
 
     return 0;
