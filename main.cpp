@@ -4,6 +4,19 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <graphics.h>
+#include <locale.h>
+
+static int framebufferWidth;
+static int framebufferHeight;
+
+static float triangleVertices[] = {
+    -0.5f, -0.5f,  0.0f,
+     0.5f, -0.5f,  0.0f,
+     0.0f,  0.5f,  0.0f,
+    // -1.0f,  0.5f,  0.0f,
+    // -0.5f, -0.5f,  0.0f,
+    //  0.0f,  0.5f,  0.0f,
+};
 
 void message(char *messageFormat, ...)
 {
@@ -35,8 +48,32 @@ void glfwErrorCallback(int error, const char *description)
     fatalError("GLFW(%d): %s", error, description);
 }
 
+void glfwFramebufferSizeCallback(GLFWwindow *window, int width, int height)
+{
+    message("Framebuffer size: %dx%d", width, height);
+    framebufferWidth = width;
+    framebufferHeight = height;
+}
+
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    message("key: %d, scancode: %d, action: %d, mods: %d", key, scancode, action, mods);
+
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        exit(EXIT_SUCCESS);
+    } 
+}
+
+void charCallback(GLFWwindow *window, unsigned int codepoint)
+{
+    message("%C", (wchar_t)codepoint);
+}
+
 int main(void)
 {
+    // Set locale to UTF-8 for printing unicode code points
+    setlocale(LC_ALL, "en_US.UTF-8");
+
     glfwSetErrorCallback(glfwErrorCallback);
 
     if (!glfwInit())
@@ -60,7 +97,7 @@ int main(void)
     // Log OpenGL version to stdout
     const GLubyte *glVendor = glGetString(GL_VENDOR);
     const GLubyte *glVersion = glGetString(GL_VERSION);
-    message("OpenGL version %s by %s\n", glVersion, glVendor);
+    message("OpenGL version %s by %s", glVersion, glVendor);
 
     // Set clear color
     GLfloat r, g, b, a;
@@ -76,11 +113,6 @@ int main(void)
     glBindVertexArray(vertexArrayHandle);
 
     // Triangle
-    const GLfloat triangleVertices[] = {
-        -0.5f, -0.5f,  0.0f,
-         0.5f, -0.5f,  0.0f,
-         0.0f,  0.5f,  0.0f,
-    };
     GLuint vertexBufferHandle;
     glGenBuffers(1, &vertexBufferHandle);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHandle);
@@ -92,6 +124,12 @@ int main(void)
     glLinkProgram(shaderProgramHandle);
 
     GLint timeUniform = glGetUniformLocation(shaderProgramHandle, "timeUniform");
+
+    glfwSetFramebufferSizeCallback(window, glfwFramebufferSizeCallback);
+    glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
+
+    glfwSetKeyCallback(window, keyCallback);
+    glfwSetCharCallback(window, charCallback);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -113,18 +151,13 @@ int main(void)
             0,         // stride
             NULL       // array buffer offset
         );
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         glDisableVertexAttribArray(0);
 
         // Swap the front and back buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
-
-        // Exit on ESC
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) 
-            break;
     }
 
-    glfwTerminate();
     return 0;
 }
