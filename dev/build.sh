@@ -17,6 +17,7 @@ compiler_flags+="-Wall -Wextra "
 
 # Disable deprecation warnings
 compiler_flags+="-Wno-deprecated "
+compiler_flags+="-Wno-unused-parameter "
 
 # Add project path to include search paths, because
 # I like using angle brackets in '#include<>'
